@@ -32,6 +32,7 @@ class Settings(BaseSettings):
     FASTAPI_PORT: int
     # FastAPI/OpenAPI project name
     FASTAPI_ENVIRONMENT: Literal["development", "staging", "production"] = "development"
+    FASTAPI_ORDER_CODE: str
     FASTAPI_PROJECT_NAME: str
     # http/https
     FASTAPI_PROTOCOL: str = "http"

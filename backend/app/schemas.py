@@ -9,6 +9,7 @@ class Order(BaseModel):
 class GuestLoginReq(BaseModel):
     user_name: str
     user_email: str
+    order_code: str
 
 class GuestOrderReq(BaseModel):
     orders: list[Order]

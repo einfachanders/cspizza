@@ -1,4 +1,4 @@
-:root {
+/* :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
@@ -76,4 +76,42 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+} */
+body {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+}
+.login-container {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 30px;
+  border-radius: 10px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+}
+.form-control {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  color: #fff;
+}
+.form-control::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+.form-control:focus {
+  background: transparent;
+  color: #fff;
+}
+.btn-primary {
+  background: #ff7eb3;
+  border: none;
+}
+.btn-primary:hover {
+  background: #ff5190;
+}
+label {
+  color: white;
 }
