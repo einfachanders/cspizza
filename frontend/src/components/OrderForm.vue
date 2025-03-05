@@ -1,20 +1,33 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import axios from "axios";
-import { useSessionStore } from "../store/sessionStore";
 
 const orders = ref([]);
 const orderName = ref("");
 const orderPrice = ref("");
 const submittedOrder = ref(null);
-const apiBaseUrl = "http://localhost:8000/api/v1"; // Change this if needed
+const apiBaseUrl = "http://localhost:8000/api/v1"; // Change if needed
+
+// Convert Euro input to cents (100 * price), handling both comma and dot
+const convertToCents = (value) => {
+  if (!value) return 0;
+  const normalizedValue = value.replace(",", "."); // Convert comma to dot
+  const floatValue = parseFloat(normalizedValue);
+  return Math.round(floatValue * 100); // Convert to cents
+};
+
+// Convert cents back to euros (€)
+const formatToEuros = (cents) => {
+  return (cents / 100).toFixed(2).replace(".", ",") + " €"; // Display with comma
+};
 
 // Add an item to the order list
 const addOrder = () => {
   if (orderName.value && orderPrice.value) {
+    const priceInCents = convertToCents(orderPrice.value);
     orders.value.push({
       name: orderName.value,
-      price: parseInt(orderPrice.value),
+      price: priceInCents,
     });
     orderName.value = "";
     orderPrice.value = "";
@@ -51,16 +64,18 @@ const fetchOrder = async () => {
 
         <!-- Order Input Fields -->
         <div class="input-group mb-3">
-          <input type="text" class="form-control rounded-pill" placeholder="Item Name" v-model="orderName" />
-          <input type="number" class="form-control rounded-pill" placeholder="Price (€)" v-model="orderPrice" />
-          <button class="btn btn-secondary rounded-pill" @click="addOrder">Add</button>
+          <div class="input-group mb-3">
+            <input type="text" class="form-control" placeholder="Item Name" v-model="orderName" />
+          </div>
+          <input type="text" class="form-control" placeholder="Price (€)" v-model="orderPrice" />
+          <button class="btn btn-secondary" @click="addOrder">Add</button>
         </div>
 
         <!-- Orders List -->
         <ul class="list-group mb-3">
           <li v-for="(order, index) in orders" :key="index" class="list-group-item d-flex justify-content-between">
             <span>{{ order.name }}</span>
-            <span class="fw-bold">€{{ order.price }}</span>
+            <span class="fw-bold">{{ formatToEuros(order.price) }}</span>
           </li>
         </ul>
 
@@ -71,12 +86,13 @@ const fetchOrder = async () => {
         <div v-if="submittedOrder" class="mt-4">
           <h4 class="text-center">Your Order</h4>
           <ul class="list-group">
-            <li v-for="(order, index) in submittedOrder.orders" :key="index" class="list-group-item d-flex justify-content-between">
+            <li v-for="(order, index) in submittedOrder.orders" :key="index"
+              class="list-group-item d-flex justify-content-between">
               <span>{{ order.name }}</span>
-              <span class="fw-bold">€{{ order.price }}</span>
+              <span class="fw-bold">{{ formatToEuros(order.price) }}</span>
             </li>
           </ul>
-          <p class="text-center mt-3 fw-bold">Total: €{{ submittedOrder.total_price }}</p>
+          <p class="text-center mt-3 fw-bold">Total: {{ formatToEuros(submittedOrder.total_price) }}</p>
         </div>
       </div>
     </div>
@@ -90,9 +106,9 @@ const fetchOrder = async () => {
   border: none;
 }
 
-.input-group input {
+/* .input-group input {
   max-width: 45%;
-}
+} */
 
 .btn-secondary {
   background-color: #6c757d;
