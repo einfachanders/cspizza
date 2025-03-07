@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import axios from "axios";
 
 const orders = ref([]);
@@ -7,6 +7,7 @@ const orderName = ref("");
 const orderPrice = ref("");
 const submittedOrder = ref(null);
 const apiBaseUrl = "http://localhost:8000/api/v1"; // Change if needed
+
 
 // Convert Euro input to cents (100 * price), handling both comma and dot
 const convertToCents = (value) => {
@@ -21,6 +22,11 @@ const formatToEuros = (cents) => {
   return (cents / 100).toFixed(2).replace(".", ",") + " €"; // Display with comma
 };
 
+// Compute the total sum in cents
+const totalSum = computed(() => {
+  return orders.value.reduce((sum, order) => sum + order.price, 0);
+});
+
 // Add an item to the order list
 const addOrder = () => {
   if (orderName.value && orderPrice.value) {
@@ -32,6 +38,11 @@ const addOrder = () => {
     orderName.value = "";
     orderPrice.value = "";
   }
+};
+
+// Remove an item from the order list
+const removeOrder = (index) => {
+  orders.value.splice(index, 1);
 };
 
 // Send the order to the backend
@@ -63,12 +74,14 @@ const fetchOrder = async () => {
         <h3 class="text-center mb-4">Place Your Order</h3>
 
         <!-- Order Input Fields -->
-        <div class="input-group mb-3">
+        <div>
           <div class="input-group mb-3">
             <input type="text" class="form-control" placeholder="Item Name" v-model="orderName" />
           </div>
-          <input type="text" class="form-control" placeholder="Price (€)" v-model="orderPrice" />
-          <button class="btn btn-secondary" @click="addOrder">Add</button>
+          <div class="input-group mb-3">
+            <input type="text" class="form-control" placeholder="Price (€)" v-model="orderPrice" />
+            <button class="btn btn-secondary" @click="addOrder">Add</button>
+          </div>
         </div>
 
         <!-- Orders List -->
@@ -76,11 +89,20 @@ const fetchOrder = async () => {
           <li v-for="(order, index) in orders" :key="index" class="list-group-item d-flex justify-content-between">
             <span>{{ order.name }}</span>
             <span class="fw-bold">{{ formatToEuros(order.price) }}</span>
+            <button class="btn btn-danger btn-sm" @click="removeOrder(index)">Löschen</button>
           </li>
         </ul>
 
+        <!-- Total Price Before Submission -->
+        <div v-if="orders.length > 0" class="d-flex justify-content-between fw-bold p-2">
+          <span>Total:</span>
+          <span>{{ formatToEuros(totalSum) }}</span>
+        </div>
+
         <!-- Submit Order Button -->
-        <button class="btn btn-primary w-100 rounded-pill" @click="submitOrder">Submit Order</button>
+        <button class="btn btn-primary w-100 rounded-pill mt-3" @click="submitOrder" :disabled="orders.length === 0">
+          Submit Order
+        </button>
 
         <!-- Display Submitted Order -->
         <div v-if="submittedOrder" class="mt-4">
@@ -106,10 +128,6 @@ const fetchOrder = async () => {
   border: none;
 }
 
-/* .input-group input {
-  max-width: 45%;
-} */
-
 .btn-secondary {
   background-color: #6c757d;
 }
@@ -122,9 +140,17 @@ const fetchOrder = async () => {
   border: none;
   padding: 10px;
   background-color: #f8f9fa;
+  display: flex;
+  align-items: center;
 }
 
 .list-group-item:nth-child(even) {
   background-color: #e9ecef;
+}
+
+.btn-danger {
+  font-size: 12px;
+  padding: 4px 8px;
+  margin-left: 10px;
 }
 </style>
