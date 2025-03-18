@@ -1,5 +1,6 @@
 import uuid
 from app.schemas import StoredOrder
+from app.security import sessions
 
 orders: dict[str, StoredOrder] = {}
 
@@ -29,4 +30,9 @@ async def get_order(session_id: str) -> StoredOrder:
         return None
 
 async def get_orders() -> dict[str, StoredOrder]:
-    return orders
+    order_list = []
+    for session_id, order in orders.items():
+        order_json = order.model_dump()
+        order_json.update(sessions.get_session_data(session_id))
+        order_list.append(order_json)
+    return order_list

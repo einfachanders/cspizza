@@ -11,7 +11,7 @@ session_cache = TTLCache(
     ttl=settings.FASTAPI_SESSION_TIMEOUT
 )
 
-def _create_session(user_name: str, user_email: str) -> str:
+def _create_session(user_name: str, user_email: str, is_admin: bool = False) -> str:
     while True:
         session_id = str(uuid.uuid4())  # Store session_id as a string
         if session_id not in session_cache:
@@ -19,13 +19,16 @@ def _create_session(user_name: str, user_email: str) -> str:
     session = Session(
         session_id=session_id,
         user_name=user_name,
-        user_email=user_email
+        user_email=user_email,
+        is_admin=is_admin
     )
     session_cache[session_id] = session
     return session_id
 
+def get_session_data(session_id: str) -> Session | None:
+    return session_cache.get(session_id)
 
-def create_cookie(user_name: str, user_email: str) -> str:
+def create_cookie(user_name: str, user_email: str, is_admin: bool = False) -> str:
     """Creates a signed new session cookie
 
     Args:
@@ -35,7 +38,7 @@ def create_cookie(user_name: str, user_email: str) -> str:
     Returns:
         str: signed cookie value
     """
-    session_id = _create_session(user_name, user_email)
+    session_id = _create_session(user_name, user_email, is_admin)
     cookie_value = jws.sign(
         payload=str(session_id).encode(),
         key=settings.FASTAPI_JWS_SECRET,
@@ -73,3 +76,12 @@ def validate_cookie(request: Request) -> Session | None:
             status_code=401,
             detail="Invalid session cookie"
         )
+
+async def check_admin(request: Request) -> bool:
+    session = validate_cookie(request)
+    if not session.is_admin:
+        raise HTTPException(
+            status_code=403,
+            detail="User does not have the required access rights"
+        )
+    return session

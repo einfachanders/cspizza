@@ -1,25 +1,9 @@
 <script setup>
-import { ref } from "vue";
 import { useSessionStore } from "../store/sessionStore";
 import OrderForm from "../components/OrderForm.vue";
 import GuestLogin from "../components/GuestLogin.vue";
 
 const sessionStore = useSessionStore();
-
-// Guest Login
-const userName = ref("");
-const userEmail = ref("");
-const orderCode = ref("");
-
-const handleLogin = async (event) => {
-  event.preventDefault(); // Prevent form submission default behavior
-  console.log("Login function triggered");
-  console.log("Name:", userName.value);
-  console.log("Email:", userEmail.value);
-  console.log("Order Code:", orderCode.value);
-
-  await sessionStore.login(userName.value, userEmail.value, orderCode.value);
-};
 </script>
 
 <template>

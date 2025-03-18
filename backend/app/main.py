@@ -2,7 +2,7 @@ from fastapi import FastAPI, Response, Depends, HTTPException
 from starlette.middleware.cors import CORSMiddleware
 from app.core.config import settings
 import app.orders as orders
-from app.schemas import GuestLoginReq, GuestOrderReq, Session, StoredOrder
+from app.schemas import AdminLoginReq, GuestLoginReq, GuestOrderReq, Session, StoredOrder
 from app.security import sessions
 
 # init FastAPI application
@@ -49,6 +49,32 @@ async def guest_login(guest_login_req: GuestLoginReq):
     )
     return response
 
+@app.post(f"{settings.FASTAPI_BASE_URI}/v1/admin-login")
+async def admin_login(guest_login_req: AdminLoginReq):
+    if not guest_login_req.admin_token == settings.FASTAPI_ADMIN_TOKEN:
+        raise HTTPException(
+            status_code=401,
+            detail="Incorrect admin token"
+        )
+    cookie_value = sessions.create_cookie(
+        user_name=guest_login_req.user_name,
+        user_email=guest_login_req.user_email,
+        is_admin=True
+    )
+    response = Response(status_code=200)
+    response.set_cookie(
+        key="pizza_session",
+        value=cookie_value,
+        max_age=settings.FASTAPI_SESSION_TIMEOUT,
+        expires=settings.FASTAPI_SESSION_TIMEOUT,
+        path="/",
+        domain=settings.FASTAPI_DOMAIN,
+        secure=True if settings.FASTAPI_PROTOCOL == "https" else False,
+        httponly=True,
+        samesite="lax"
+    )
+    return response
+
 @app.post(f"{settings.FASTAPI_BASE_URI}/v1/guest-order")
 async def guest_order(guest_order_req: GuestOrderReq, session: Session = Depends(sessions.validate_cookie)):
     order_id = await orders.generate_order_id()
@@ -65,3 +91,8 @@ async def guest_order(guest_order_req: GuestOrderReq, session: Session = Depends
 async def get_order(session: Session = Depends(sessions.validate_cookie)):
     order = await orders.get_order(session.session_id)
     return order
+
+@app.get(f"{settings.FASTAPI_BASE_URI}/v1/orders")
+async def get_orders(session: Session = Depends(sessions.check_admin)):
+    all_orders = await orders.get_orders()
+    return all_orders

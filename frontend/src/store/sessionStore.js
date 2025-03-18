@@ -20,6 +20,18 @@ export const useSessionStore = defineStore("session", {
       }
     },
 
+    async checkAdminSession() {
+      try {
+        const response = await axios.get("/api/v1/orders", { withCredentials: true });
+        if (response.status === 200) {
+          this.isAdminAuthenticated = true; // Use the correct state property
+          // this.orders = response.data; // Ensure 'orders' is defined in state
+        }
+      } catch (error) {
+        this.isAdminAuthenticated = false;
+      }
+    },
+
     async login(userName, userEmail, orderCode) {
       try {
         await axios.post(
@@ -28,6 +40,21 @@ export const useSessionStore = defineStore("session", {
           { withCredentials: true }
         );
         this.isGuestAuthenticated = true;
+        // await this.checkGuestSession();
+      } catch (error) {
+        console.log(error)
+        alert("Login failed!");
+      }
+    },
+
+    async adminLogin(userName, userEmail, adminToken) {
+      try {
+        await axios.post(
+          "/api/v1/admin-login",
+          { user_name: userName, user_email: userEmail, admin_token: adminToken },
+          { withCredentials: true }
+        );
+        this.isAdminAuthenticated = true;
         // await this.checkGuestSession();
       } catch (error) {
         console.log(error)

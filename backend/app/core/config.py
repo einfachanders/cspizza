@@ -19,6 +19,7 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8"
     )
 
+    FASTAPI_ADMIN_TOKEN: str
     FASTAPI_BASE_URI: str = "/api"
     # Allowed Cross Origin Request origins
     FASTAPI_BACKEND_CORS_ORIGINS: Annotated[

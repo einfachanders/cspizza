@@ -11,6 +11,11 @@ class GuestLoginReq(BaseModel):
     user_email: str
     order_code: str
 
+class AdminLoginReq(BaseModel):
+    user_name: str
+    user_email: str
+    admin_token: str
+
 class GuestOrderReq(BaseModel):
     orders: list[Order]
 
@@ -18,6 +23,7 @@ class Session(BaseModel):
     session_id: str
     user_name: str
     user_email: str
+    is_admin: bool = False
 
 class StoredOrder(BaseModel):
     order_id: str
