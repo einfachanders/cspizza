@@ -23,5 +23,5 @@ class StoredOrder(BaseModel):
     order_id: str
     orders: list[Order]
     total_price: int
-    ordered: Optional[bool] = False
+    ordered: Optional[bool] = True
     payed: Optional[bool] = False

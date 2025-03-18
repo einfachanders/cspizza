@@ -36,38 +36,3 @@ export const useSessionStore = defineStore("session", {
     },
   },
 });
-
-    // async login(userName, userEmail, orderCode) {
-    //   try {
-    //     await axios.post(
-    //       "/api/v1/guest-login",
-    //       { user_name: userName, user_email: userEmail, order_code: orderCode },
-    //       { withCredentials: true }
-    //     );
-    //     this.isAuthenticated = true;
-    //     await this.checkSession();
-    //   } catch (error) {
-    //     alert("Login failed!");
-    //   }
-    // },
-
-    // async submitOrder(orderItems) {
-    //   const orders = orderItems.map((item) => ({
-    //     name: item.name,
-    //     price: Math.round(item.price * 100), // Convert to cents
-    //   }));
-
-    //   try {
-    //     const response = await axios.post(
-    //       "/api/v1/guest-order",
-    //       { orders },
-    //       { withCredentials: true }
-    //     );
-    //     this.orders = response.data.orders;
-    //     this.totalPrice = response.data.total_price / 100;
-    //   } catch (error) {
-    //     alert("Order submission failed!");
-    //   }
-    // },
-//   },
-// });

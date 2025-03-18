@@ -23,7 +23,10 @@ async def mark_payed(session_id: str) -> StoredOrder:
     return orders[session_id]
 
 async def get_order(session_id: str) -> StoredOrder:
-    return orders[session_id]
+    if session_id in orders.keys():
+        return orders[session_id]
+    else:
+        return None
 
 async def get_orders() -> dict[str, StoredOrder]:
     return orders

@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { useSessionStore } from "../store/sessionStore";
 import OrderForm from "../components/OrderForm.vue";
 
@@ -9,6 +9,10 @@ const sessionStore = useSessionStore();
 const userName = ref("");
 const userEmail = ref("");
 const orderCode = ref("");
+
+onMounted(() => {
+  sessionStore.checkGuestSession();
+})
 
 const handleLogin = async (event) => {
   event.preventDefault(); // Prevent form submission default behavior

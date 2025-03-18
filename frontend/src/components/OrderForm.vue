@@ -6,8 +6,11 @@ const orders = ref([]);
 const orderName = ref("");
 const orderPrice = ref("");
 const submittedOrder = ref(null);
-const apiBaseUrl = "http://localhost:8000/api/v1"; // Change if needed
+const apiBaseUrl = "http://172.30.1.4:8082/api/v1"; // Change if needed
 
+onMounted(() => {
+  fetchOrder();
+})
 
 // Convert Euro input to cents (100 * price), handling both comma and dot
 const convertToCents = (value) => {
@@ -48,9 +51,16 @@ const removeOrder = (index) => {
 // Send the order to the backend
 const submitOrder = async () => {
   try {
-    const response = await axios.post(`${apiBaseUrl}/guest-order`, { orders: orders.value }, { withCredentials: true });
-    submittedOrder.value = response.data;
-    orders.value = []; // Clear the form after submission
+    console.log("Current submitted order:", submittedOrder.value);
+    if (submittedOrder.value?.ordered) {
+      alert("Deine Bestellung wurde bereits aufgenommen, du kannst diese nicht mehr ändern");
+      orders.value = [];
+      return; // Stop execution
+    } else {
+      const response = await axios.post(`${apiBaseUrl}/guest-order`, { orders: orders.value }, { withCredentials: true });
+      submittedOrder.value = response.data;
+      orders.value = []; // Clear the form after submission
+    }
   } catch (error) {
     console.error("Order submission failed:", error.response?.data || error.message);
   }
@@ -61,6 +71,7 @@ const fetchOrder = async () => {
   try {
     const response = await axios.get(`${apiBaseUrl}/guest-order`, { withCredentials: true });
     submittedOrder.value = response.data;
+    await console.log(await submittedOrder)
   } catch (error) {
     console.error("Fetching order failed:", error.response?.data || error.message);
   }
@@ -115,6 +126,26 @@ const fetchOrder = async () => {
             </li>
           </ul>
           <p class="text-center mt-3 fw-bold">Total: {{ formatToEuros(submittedOrder.total_price) }}</p>
+          <div class="row text-center">
+            <div class="col-sm-6">
+              <div class="alert"
+                :class="{ 'alert-danger': !submittedOrder.payed, 'alert-sucess': submittedOrder.payed }" role="alert">
+                Bezahlt
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="alert"
+                :class="{ 'alert-danger': !submittedOrder.ordered, 'alert-success': submittedOrder.ordered }"
+                role="alert">
+                Bestellt
+              </div>
+            </div>
+          </div>
+          <div v-if="submittedOrder && !submittedOrder.payed">
+            <a :href="paypalLink" target="_blank" class="btn btn-primary w-100 rounded-pill mt-3">
+              <i class="fa-brands fa-paypal"></i> Pay Now
+            </a>
+          </div>
         </div>
       </div>
     </div>
