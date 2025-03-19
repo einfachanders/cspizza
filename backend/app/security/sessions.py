@@ -12,6 +12,12 @@ session_cache = TTLCache(
 )
 
 def _create_session(user_name: str, user_email: str, is_admin: bool = False) -> str:
+    for session_id, session in session_cache.items():
+        if session.user_email == user_email:
+            raise HTTPException(
+                status_code=400,
+                detail="E-Mail already in use."
+            )
     while True:
         session_id = str(uuid.uuid4())  # Store session_id as a string
         if session_id not in session_cache:

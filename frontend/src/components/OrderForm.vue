@@ -6,11 +6,10 @@ const orders = ref([]);
 const orderName = ref("");
 const orderPrice = ref("");
 const submittedOrder = ref(null);
-const apiBaseUrl = "http://172.30.1.4:8082/api/v1"; // Change if needed
 
-onMounted(() => {
-  fetchOrder();
-})
+onMounted(async () => {
+  await fetchOrder();
+});
 
 // Convert Euro input to cents (100 * price), handling both comma and dot
 const convertToCents = (value) => {
@@ -22,7 +21,10 @@ const convertToCents = (value) => {
 
 // Convert cents back to euros (€)
 const formatToEuros = (cents) => {
-  return (cents / 100).toFixed(2).replace(".", ","); // Display with comma
+  return new Intl.NumberFormat("de-DE", {
+    style: "currency",
+    currency: "EUR",
+  }).format(cents / 100);
 };
 
 // Compute the total sum in cents
@@ -32,15 +34,24 @@ const totalSum = computed(() => {
 
 // Add an item to the order list
 const addOrder = () => {
-  if (orderName.value && orderPrice.value) {
-    const priceInCents = convertToCents(orderPrice.value);
-    orders.value.push({
-      name: orderName.value,
-      price: priceInCents,
-    });
-    orderName.value = "";
-    orderPrice.value = "";
+  if (!orderName.value.trim()) {
+    alert("Item name cannot be empty!");
+    return;
   }
+
+  const priceInCents = convertToCents(orderPrice.value);
+  if (isNaN(priceInCents) || priceInCents <= 0) {
+    alert("Please enter a valid price!");
+    return;
+  }
+
+  orders.value.push({
+    name: orderName.value.trim(),
+    price: priceInCents,
+  });
+
+  orderName.value = "";
+  orderPrice.value = "";
 };
 
 // Remove an item from the order list
@@ -51,18 +62,16 @@ const removeOrder = (index) => {
 // Send the order to the backend
 const submitOrder = async () => {
   try {
-    console.log("Current submitted order:", submittedOrder.value);
     if (submittedOrder.value?.ordered) {
-      alert("Deine Bestellung wurde bereits aufgenommen, du kannst diese nicht mehr ändern");
-      orders.value = [];
-      return; // Stop execution
-    } else {
-      const response = await axios.post("/api/v1/guest-order", { orders: orders.value }, { withCredentials: true });
-      submittedOrder.value = response.data;
-      orders.value = []; // Clear the form after submission
+      alert("You cannot modify an already submitted order.");
+      return;
     }
+    const response = await axios.post("/api/v1/guest-order", { orders: orders.value }, { withCredentials: true });
+    submittedOrder.value = response.data;
+    orders.value = [];
   } catch (error) {
-    console.error("Order submission failed:", error.response?.data || error.message);
+    alert("Failed to submit order. Please try again.");
+    console.error("Order submission error:", error);
   }
 };
 
@@ -82,42 +91,44 @@ const fetchOrder = async () => {
   <div class="container d-flex align-items-center justify-content-center">
     <div class="card shadow-lg p-4 rounded">
       <div class="card-body">
-        <h3 class="text-center mb-4">Place Your Order</h3>
+        <div v-if="!submittedOrder">
+          <h3 class="text-center mb-4">Bestellung aufgeben</h3>
 
-        <!-- Order Input Fields -->
-        <div>
-          <div class="input-group mb-3">
-            <input type="text" class="form-control" placeholder="Item Name" v-model="orderName" />
+          <!-- Order Input Fields -->
+          <div>
+            <div class="input-group mb-3">
+              <input type="text" class="form-control" placeholder="Item Name" v-model="orderName" />
+            </div>
+            <div class="input-group mb-3">
+              <input type="text" class="form-control" placeholder="Price (€)" v-model="orderPrice" />
+              <button class="btn btn-secondary" @click="addOrder" :disabled="!orderName || !orderPrice">Add</button>
+            </div>
           </div>
-          <div class="input-group mb-3">
-            <input type="text" class="form-control" placeholder="Price (€)" v-model="orderPrice" />
-            <button class="btn btn-secondary" @click="addOrder">Add</button>
+
+          <!-- Orders List -->
+          <ul class="list-group mb-3">
+            <li v-for="(order, index) in orders" :key="index" class="list-group-item d-flex justify-content-between">
+              <span>{{ order.name }}</span>
+              <span class="fw-bold">{{ formatToEuros(order.price) }}</span>
+              <button class="btn btn-danger btn-sm" @click="removeOrder(index)">Löschen</button>
+            </li>
+          </ul>
+
+          <!-- Total Price Before Submission -->
+          <div v-if="orders.length > 0" class="d-flex justify-content-between fw-bold p-2">
+            <span>Total:</span>
+            <span>{{ formatToEuros(totalSum) }}</span>
           </div>
+
+          <!-- Submit Order Button -->
+          <button class="btn btn-primary w-100 rounded-pill mt-3" @click="submitOrder" :disabled="orders.length === 0">
+            Submit Order
+          </button>
         </div>
-
-        <!-- Orders List -->
-        <ul class="list-group mb-3">
-          <li v-for="(order, index) in orders" :key="index" class="list-group-item d-flex justify-content-between">
-            <span>{{ order.name }}</span>
-            <span class="fw-bold">{{ formatToEuros(order.price) }}</span>
-            <button class="btn btn-danger btn-sm" @click="removeOrder(index)">Löschen</button>
-          </li>
-        </ul>
-
-        <!-- Total Price Before Submission -->
-        <div v-if="orders.length > 0" class="d-flex justify-content-between fw-bold p-2">
-          <span>Total:</span>
-          <span>{{ formatToEuros(totalSum) }}</span>
-        </div>
-
-        <!-- Submit Order Button -->
-        <button class="btn btn-primary w-100 rounded-pill mt-3" @click="submitOrder" :disabled="orders.length === 0">
-          Submit Order
-        </button>
 
         <!-- Display Submitted Order -->
         <div v-if="submittedOrder" class="mt-4">
-          <h4 class="text-center">Your Order</h4>
+          <h4 class="text-center">Deine Bestellung</h4>
           <ul class="list-group">
             <li v-for="(order, index) in submittedOrder.orders" :key="index"
               class="list-group-item d-flex justify-content-between">
@@ -125,24 +136,25 @@ const fetchOrder = async () => {
               <span class="fw-bold">{{ formatToEuros(order.price) }}</span>
             </li>
           </ul>
-          <p class="text-center mt-3 fw-bold">Total: {{ formatToEuros(submittedOrder.total_price) }} €</p>
+          <p class="text-center mt-3 fw-bold">Gesamt: {{ formatToEuros(submittedOrder.total_price) }}</p>
           <div class="row text-center">
-            <div class="col-sm-6">
-              <div class="alert"
-                :class="{ 'alert-danger': !submittedOrder.payed, 'alert-success': submittedOrder.payed }">
-                Bezahlt
-              </div>
-            </div>
             <div class="col-sm-6">
               <div class="alert"
                 :class="{ 'alert-danger': !submittedOrder.ordered, 'alert-success': submittedOrder.ordered }"
                 role="alert">
-                Bestellt
+                {{ submittedOrder.ordered ? 'Bestellt' : 'Noch nicht bestellt' }}
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="alert"
+                :class="{ 'alert-danger': !submittedOrder.payed, 'alert-success': submittedOrder.payed }">
+                {{ submittedOrder.payed ? 'Bezahlt' : 'Nicht bezahlt' }}
               </div>
             </div>
           </div>
           <div v-if="submittedOrder && !submittedOrder.payed">
-            <a :href="`https://www.paypal.com/paypalme/b1tsheep/${formatToEuros(submittedOrder.total_price)}`" target="_blank" class="btn btn-primary w-100 rounded-pill mt-3">
+            <a :href="`https://www.paypal.com/paypalme/b1tsheep/${(submittedOrder.total_price / 100).toFixed(2).replace('.', ',')}`"
+              target="_blank" class="btn btn-primary w-100 rounded-pill mt-3">
               <i class="bi bi-paypal"></i> Mit Paypal bezahlen
             </a>
           </div>

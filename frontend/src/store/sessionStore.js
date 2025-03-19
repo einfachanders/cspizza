@@ -43,7 +43,7 @@ export const useSessionStore = defineStore("session", {
         // await this.checkGuestSession();
       } catch (error) {
         console.log(error)
-        alert("Login failed!");
+        alert(error.response.data.detail);
       }
     },
 

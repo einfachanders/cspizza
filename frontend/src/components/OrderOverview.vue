@@ -19,7 +19,7 @@ const fetchOrders = async () => {
 };
 
 const updateOrder = (updatedOrder) => {
-    const index = orders.value.findIndex(order => order.id === updatedOrder.id);
+    const index = orders.value.findIndex(order => order.order_id === updatedOrder.order_id);
     if (index !== -1) {
         orders.value[index] = updatedOrder; // Update the order in the list
     }

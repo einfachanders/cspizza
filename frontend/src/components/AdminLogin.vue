@@ -15,11 +15,6 @@ onMounted(() => {
 
 const handleLogin = async (event) => {
   event.preventDefault(); // Prevent form submission default behavior
-  console.log("Login function triggered");
-  console.log("Name:", userName.value);
-  console.log("Email:", userEmail.value);
-  console.log("Admin Token:", adminToken.value);
-
   await sessionStore.adminLogin(userName.value, userEmail.value, adminToken.value);
 };
 </script>

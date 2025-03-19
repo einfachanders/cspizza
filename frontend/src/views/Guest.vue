@@ -16,6 +16,7 @@ const sessionStore = useSessionStore();
 <style scoped>
 .guest-container {
   min-height: 100vh;
+  max-height: 100vh;
   background: linear-gradient(135deg, #f8f9fa, #e9ecef);
   /* Light gradient background */
 }
