@@ -31,3 +31,7 @@ class StoredOrder(BaseModel):
     total_price: int
     ordered: Optional[bool] = True
     payed: Optional[bool] = False
+
+class StoredOrderPatchReq(BaseModel):
+    ordered: Optional[bool] = None
+    payed: Optional[bool] = None

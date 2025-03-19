@@ -19,29 +19,4 @@ const sessionStore = useSessionStore();
   background: linear-gradient(135deg, #f8f9fa, #e9ecef);
   /* Light gradient background */
 }
-
-.card {
-  width: 100%;
-  max-width: 400px;
-  border: none;
-}
-
-.form-control {
-  transition: all 0.3s ease-in-out;
-}
-
-.form-control:focus {
-  border-color: #007bff;
-  box-shadow: 0 0 10px rgba(0, 123, 255, 0.3);
-}
-
-.btn-primary {
-  background-color: #007bff;
-  border: none;
-  transition: 0.3s;
-}
-
-.btn-primary:hover {
-  background-color: #0056b3;
-}
 </style>

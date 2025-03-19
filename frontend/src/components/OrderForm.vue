@@ -22,7 +22,7 @@ const convertToCents = (value) => {
 
 // Convert cents back to euros (€)
 const formatToEuros = (cents) => {
-  return (cents / 100).toFixed(2).replace(".", ",") + " €"; // Display with comma
+  return (cents / 100).toFixed(2).replace(".", ","); // Display with comma
 };
 
 // Compute the total sum in cents
@@ -57,7 +57,7 @@ const submitOrder = async () => {
       orders.value = [];
       return; // Stop execution
     } else {
-      const response = await axios.post(`${apiBaseUrl}/guest-order`, { orders: orders.value }, { withCredentials: true });
+      const response = await axios.post("/api/v1/guest-order", { orders: orders.value }, { withCredentials: true });
       submittedOrder.value = response.data;
       orders.value = []; // Clear the form after submission
     }
@@ -69,7 +69,7 @@ const submitOrder = async () => {
 // Fetch user's order
 const fetchOrder = async () => {
   try {
-    const response = await axios.get(`${apiBaseUrl}/guest-order`, { withCredentials: true });
+    const response = await axios.get("/api/v1/guest-order", { withCredentials: true });
     submittedOrder.value = response.data;
     await console.log(await submittedOrder)
   } catch (error) {
@@ -125,11 +125,11 @@ const fetchOrder = async () => {
               <span class="fw-bold">{{ formatToEuros(order.price) }}</span>
             </li>
           </ul>
-          <p class="text-center mt-3 fw-bold">Total: {{ formatToEuros(submittedOrder.total_price) }}</p>
+          <p class="text-center mt-3 fw-bold">Total: {{ formatToEuros(submittedOrder.total_price) }} €</p>
           <div class="row text-center">
             <div class="col-sm-6">
               <div class="alert"
-                :class="{ 'alert-danger': !submittedOrder.payed, 'alert-sucess': submittedOrder.payed }" role="alert">
+                :class="{ 'alert-danger': !submittedOrder.payed, 'alert-success': submittedOrder.payed }">
                 Bezahlt
               </div>
             </div>
@@ -142,8 +142,8 @@ const fetchOrder = async () => {
             </div>
           </div>
           <div v-if="submittedOrder && !submittedOrder.payed">
-            <a :href="paypalLink" target="_blank" class="btn btn-primary w-100 rounded-pill mt-3">
-              <i class="fa-brands fa-paypal"></i> Pay Now
+            <a :href="`https://www.paypal.com/paypalme/b1tsheep/${formatToEuros(submittedOrder.total_price)}`" target="_blank" class="btn btn-primary w-100 rounded-pill mt-3">
+              <i class="bi bi-paypal"></i> Mit Paypal bezahlen
             </a>
           </div>
         </div>

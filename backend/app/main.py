@@ -2,7 +2,7 @@ from fastapi import FastAPI, Response, Depends, HTTPException
 from starlette.middleware.cors import CORSMiddleware
 from app.core.config import settings
 import app.orders as orders
-from app.schemas import AdminLoginReq, GuestLoginReq, GuestOrderReq, Session, StoredOrder
+from app.schemas import AdminLoginReq, GuestLoginReq, GuestOrderReq, Session, StoredOrder, StoredOrderPatchReq
 from app.security import sessions
 
 # init FastAPI application
@@ -20,7 +20,7 @@ if settings.FASTAPI_BACKEND_CORS_ORIGINS:
             str(origin).strip("/") for origin in settings.FASTAPI_BACKEND_CORS_ORIGINS
         ],
         allow_credentials=True,
-        allow_methods=["GET", "POST", "OPTIONS"],
+        allow_methods=["GET", "PATCH", "POST", "OPTIONS"],
         allow_headers=["*"],
     )
 
@@ -96,3 +96,15 @@ async def get_order(session: Session = Depends(sessions.validate_cookie)):
 async def get_orders(session: Session = Depends(sessions.check_admin)):
     all_orders = await orders.get_orders()
     return all_orders
+
+@app.patch("/api/v1/orders/{order_id}")
+async def patch_order(order_id: str, patch_req: StoredOrderPatchReq,
+                      session: Session = Depends(sessions.check_admin)):
+    order = await orders.get_order_by_id(order_id)
+    if order is None:
+        return HTTPException(
+            status_code=404,
+            detail="Order not found"
+        )
+    order = await orders.update_order(order.order_id, **patch_req.model_dump())
+    return order

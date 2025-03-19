@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue';
+import axios from 'axios';
 
 const props = defineProps({
     order: {
@@ -14,11 +15,28 @@ const props = defineProps({
     }
 });
 
+const emit = defineEmits(["update-order"]);
+
 const formatToEuros = (cents) => {
     return (cents / 100).toFixed(2).replace(".", ",") + " €";
 };
 
 const totalPrice = computed(() => formatToEuros(props.order?.total_price || 0));
+
+const toggleStatus = async (field) => {
+    try {
+        const updatedValue = !props.order[field];
+        const response = await axios.patch(
+            `/api/v1/orders/${props.order.order_id}`,
+            { [field]: updatedValue },
+            { withCredentials: true }
+        );
+
+        emit("update-order", { ...props.order, [field]: updatedValue });
+    } catch (error) {
+        console.error("Error updating order:", error);
+    }
+};
 </script>
 
 <template>
@@ -36,47 +54,19 @@ const totalPrice = computed(() => formatToEuros(props.order?.total_price || 0));
                 <p class="text-center m-3 fw-bold">Total: {{ totalPrice }}</p>
                 <div class="row text-center m-3">
                     <div class="col-6">
-                        <div class="alert" :class="{ 'alert-danger': !order.payed, 'alert-success': order.payed }"
-                            role="status">
-                            {{ order.payed ? 'Paid' : 'Not Paid' }}
-                        </div>
+                        <button @click="toggleStatus('payed')" class="btn w-100"
+                            :class="{ 'btn-danger': !order.payed, 'btn-success': order.payed }">
+                            {{ order.payed ? 'Bezahlt' : 'Nicht bezahlt' }}
+                        </button>
                     </div>
                     <div class="col-6">
-                        <div class="alert" :class="{ 'alert-danger': !order.ordered, 'alert-success': order.ordered }"
-                            role="status">
-                            {{ order.ordered ? 'Ordered' : 'Not Ordered' }}
-                        </div>
+                        <button @click="toggleStatus('ordered')" class="btn w-100"
+                            :class="{ 'btn-danger': !order.ordered, 'btn-success': order.ordered }">
+                            {{ order.ordered ? 'Bestellt' : 'Noch nicht bestellt' }}
+                        </button>
                     </div>
                 </div>
             </div>
-            <!-- <div class="m-3">
-                <section aria-labelledby="order-title">
-                    <h4 id="order-title" class="text-center">{{ order.user_name}}</h4>
-                </section>
-                <ul v-if="order?.orders?.length" class="list-group mt-3">
-                    <li v-for="(item, index) in order.orders" :key="index"
-                        class="list-group-item d-flex justify-content-between">
-                        <span>{{ item.name }}</span>
-                        <span class="fw-bold">{{ formatToEuros(item.price) }}</span>
-                    </li>
-                </ul>
-                <p v-else class="text-center text-muted">No items in the order.</p>
-            </div>
-            <p class="text-center mb-3 fw-bold">Total: {{ totalPrice }}</p>
-            <div class="row text-center m-3">
-                <div class="col-sm-6">
-                    <div class="alert" :class="{ 'alert-danger': !order.payed, 'alert-success': order.payed }"
-                        role="status">
-                        {{ order.payed ? 'Paid' : 'Not Paid' }}
-                    </div>
-                </div>
-                <div class="col-sm-6">
-                    <div class="alert" :class="{ 'alert-danger': !order.ordered, 'alert-success': order.ordered }"
-                        role="status">
-                        {{ order.ordered ? 'Ordered' : 'Not Ordered' }}
-                    </div>
-                </div>
-            </div> -->
         </div>
     </div>
 </template>
@@ -84,14 +74,6 @@ const totalPrice = computed(() => formatToEuros(props.order?.total_price || 0));
 <style>
 .card {
     min-width: 400px;
-}
-
-.btn-secondary {
-    background-color: #6c757d;
-}
-
-.btn-secondary:hover {
-    background-color: #545b62;
 }
 
 .list-group-item {
@@ -106,9 +88,9 @@ const totalPrice = computed(() => formatToEuros(props.order?.total_price || 0));
     background-color: #e9ecef;
 }
 
-.btn-danger {
-    font-size: 12px;
-    padding: 4px 8px;
-    margin-left: 10px;
+.btn {
+    font-size: 14px;
+    padding: 8px 12px;
+    border-radius: 5px;
 }
 </style>
