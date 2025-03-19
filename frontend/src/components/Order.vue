@@ -22,9 +22,34 @@ const totalPrice = computed(() => formatToEuros(props.order?.total_price || 0));
 </script>
 
 <template>
-    <div class="col col-xl-3 m-3">
-        <div class="card m-3">
-            <div class="m-3">
+    <div class="col-xl">
+        <div class="card">
+            <div class="card-body">
+                <h4 id="order-title" class="text-center">{{ order.user_name }}</h4>
+                <ul v-if="order?.orders?.length" class="list-group mt-3">
+                    <li v-for="(item, index) in order.orders" :key="index"
+                        class="list-group-item d-flex justify-content-between">
+                        <span>{{ item.name }}</span>
+                        <span class="fw-bold">{{ formatToEuros(item.price) }}</span>
+                    </li>
+                </ul>
+                <p class="text-center m-3 fw-bold">Total: {{ totalPrice }}</p>
+                <div class="row text-center m-3">
+                    <div class="col-6">
+                        <div class="alert" :class="{ 'alert-danger': !order.payed, 'alert-success': order.payed }"
+                            role="status">
+                            {{ order.payed ? 'Paid' : 'Not Paid' }}
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="alert" :class="{ 'alert-danger': !order.ordered, 'alert-success': order.ordered }"
+                            role="status">
+                            {{ order.ordered ? 'Ordered' : 'Not Ordered' }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- <div class="m-3">
                 <section aria-labelledby="order-title">
                     <h4 id="order-title" class="text-center">{{ order.user_name}}</h4>
                 </section>
@@ -51,16 +76,14 @@ const totalPrice = computed(() => formatToEuros(props.order?.total_price || 0));
                         {{ order.ordered ? 'Ordered' : 'Not Ordered' }}
                     </div>
                 </div>
-            </div>
+            </div> -->
         </div>
     </div>
 </template>
 
 <style>
 .card {
-    width: 100%;
-    max-width: 500px;
-    border: none;
+    min-width: 400px;
 }
 
 .btn-secondary {
