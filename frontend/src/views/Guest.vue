@@ -1,6 +1,6 @@
 <script setup>
 import { useSessionStore } from "../store/sessionStore";
-import OrderForm from "../components/OrderForm.vue";
+import MainOrder from "../components/MainOrder.vue";
 import GuestLogin from "../components/GuestLogin.vue";
 
 const sessionStore = useSessionStore();
@@ -9,7 +9,7 @@ const sessionStore = useSessionStore();
 <template>
   <div class="guest-container d-flex align-items-center justify-content-center">
     <GuestLogin v-if="!sessionStore.isGuestAuthenticated"/>
-    <OrderForm v-if="sessionStore.isGuestAuthenticated"/>
+    <MainOrder v-if="sessionStore.isGuestAuthenticated"/>
   </div>
 </template>
 
