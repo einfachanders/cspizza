@@ -1,0 +1,19 @@
+services:
+  pizza-frontend:
+    image: pizza/frontend
+    container_name: pizza-frontend
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+    ports:
+      - "8081:80"
+
+  pizza-backend:
+    image: pizza/backend
+    container_name: pizza-backend
+    build:
+      context: backend
+      dockerfile: Dockerfile
+    env_file: backend/.env
+    ports:
+      - "8082:8000"
