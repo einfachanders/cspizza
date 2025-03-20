@@ -12,7 +12,7 @@ const addOrder = () => {
     return;
   }
 
-  const priceInCents = parseFloat(orderPrice.value.replace(",", ".")) * 100;
+  const priceInCents = Math.round(parseFloat(orderPrice.value.replace(",", ".")) * 100);
   if (isNaN(priceInCents) || priceInCents <= 0) {
     alert("Please enter a valid price!");
     return;
